@@ -1,5 +1,5 @@
 {
-	"name": "BRONZE_df_clientes_bd_gen",
+	"name": "BRONZE_df_detalle_ventas",
 	"properties": {
 		"folder": {
 			"name": "BRONZE"
@@ -9,7 +9,7 @@
 			"sources": [
 				{
 					"dataset": {
-						"referenceName": "Clientes_BD_GEN_csv",
+						"referenceName": "Detalle_ventas_csv",
 						"type": "DatasetReference"
 					},
 					"name": "source1"
@@ -18,7 +18,7 @@
 			"sinks": [
 				{
 					"dataset": {
-						"referenceName": "bronze_sql_clientes_bd_gen",
+						"referenceName": "bronze_sql_detalle_ventas",
 						"type": "DatasetReference"
 					},
 					"name": "sink1"
@@ -27,9 +27,14 @@
 			"transformations": [],
 			"scriptLines": [
 				"source(output(",
-				"          CID as string,",
-				"          BDATE as string,",
-				"          GEN as string",
+				"          sls_ord_num as string,",
+				"          sls_prd_key as string,",
+				"          sls_cust_id as string,",
+				"          sls_order_dt as string,",
+				"          sls_ship_dt as string,",
+				"          sls_sales as string,",
+				"          sls_quantity as string,",
+				"          sls_price as string",
 				"     ),",
 				"     allowSchemaDrift: true,",
 				"     validateSchema: false,",
@@ -37,9 +42,14 @@
 				"source1 sink(allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     input(",
-				"          CID as string,",
-				"          BDATE as string,",
-				"          GEN as string",
+				"          sls_ord_num as string,",
+				"          sls_prd_key as string,",
+				"          sls_cust_id as string,",
+				"          sls_order_dt as string,",
+				"          sls_ship_dt as string,",
+				"          sls_sales as string,",
+				"          sls_quantity as string,",
+				"          sls_price as string",
 				"     ),",
 				"     deletable:false,",
 				"     insertable:true,",
@@ -51,9 +61,14 @@
 				"     skipDuplicateMapOutputs: true,",
 				"     errorHandlingOption: 'stopOnFirstError',",
 				"     mapColumn(",
-				"          CID,",
-				"          BDATE,",
-				"          GEN",
+				"          sls_ord_num,",
+				"          sls_prd_key,",
+				"          sls_cust_id,",
+				"          sls_order_dt,",
+				"          sls_ship_dt,",
+				"          sls_sales,",
+				"          sls_quantity,",
+				"          sls_price",
 				"     )) ~> sink1"
 			]
 		}
