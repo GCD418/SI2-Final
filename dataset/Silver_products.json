@@ -1,0 +1,45 @@
+{
+	"name": "Silver_products",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "sql_dw_distribuidora",
+			"type": "LinkedServiceReference"
+		},
+		"folder": {
+			"name": "SILVER"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [
+			{
+				"name": "product_key",
+				"type": "varchar"
+			},
+			{
+				"name": "cost",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "category",
+				"type": "varchar"
+			},
+			{
+				"name": "sub_category",
+				"type": "varchar"
+			},
+			{
+				"name": "product_name",
+				"type": "varchar"
+			},
+			{
+				"name": "maintenance",
+				"type": "varchar"
+			}
+		],
+		"typeProperties": {
+			"schema": "SILVER",
+			"table": "Products"
+		}
+	}
+}
