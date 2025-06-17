@@ -1,0 +1,71 @@
+{
+	"$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"factoryName": {
+			"type": "string",
+			"metadata": "Data Factory name",
+			"defaultValue": "adf-ucb-sisinfo-7268517"
+		},
+		"sa_distribuidora_raw_connectionString": {
+			"type": "secureString",
+			"metadata": "Secure string for 'connectionString' of 'sa_distribuidora_raw'"
+		},
+		"sql_dw_distribuidora_password": {
+			"type": "secureString",
+			"metadata": "Secure string for 'password' of 'sql_dw_distribuidora'"
+		},
+		"sql_dw_distribuidora_properties_typeProperties_server": {
+			"type": "string",
+			"defaultValue": "sql-ucb-sisinfo-7268517.database.windows.net"
+		},
+		"sql_dw_distribuidora_properties_typeProperties_database": {
+			"type": "string",
+			"defaultValue": "dw-distribuidora"
+		},
+		"sql_dw_distribuidora_properties_typeProperties_userName": {
+			"type": "string",
+			"defaultValue": "gabriel"
+		}
+	},
+	"variables": {
+		"factoryId": "[concat('Microsoft.DataFactory/factories/', parameters('factoryName'))]"
+	},
+	"resources": [
+		{
+			"name": "[concat(parameters('factoryName'), '/sa_distribuidora_raw')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "AzureBlobStorage",
+				"typeProperties": {
+					"connectionString": "[parameters('sa_distribuidora_raw_connectionString')]"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/sql_dw_distribuidora')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "AzureSqlDatabase",
+				"typeProperties": {
+					"server": "[parameters('sql_dw_distribuidora_properties_typeProperties_server')]",
+					"database": "[parameters('sql_dw_distribuidora_properties_typeProperties_database')]",
+					"encrypt": "mandatory",
+					"trustServerCertificate": false,
+					"authenticationType": "SQL",
+					"userName": "[parameters('sql_dw_distribuidora_properties_typeProperties_userName')]",
+					"password": {
+						"type": "SecureString",
+						"value": "[parameters('sql_dw_distribuidora_password')]"
+					}
+				}
+			},
+			"dependsOn": []
+		}
+	]
+}
