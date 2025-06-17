@@ -43,9 +43,6 @@
 					"name": "explainMaritalStatus"
 				},
 				{
-					"name": "trimNames"
-				},
-				{
 					"name": "unifyId"
 				},
 				{
@@ -62,6 +59,12 @@
 				},
 				{
 					"name": "select1"
+				},
+				{
+					"name": "sort1"
+				},
+				{
+					"name": "aggregate1"
 				}
 			],
 			"scriptLines": [
@@ -99,9 +102,9 @@
 				"    iif(marital_status == 'M', 'married',",
 				"        iif(marital_status == 'S', 'single', marital_status)",
 				"    )",
-				")) ~> explainMaritalStatus",
-				"explainMaritalStatus derive(firstname = trim(firstname),",
-				"          lastname = trim(lastname)) ~> trimNames",
+				"),",
+				"          firstname = trim(firstname),",
+				"          lastname = trim(lastname)) ~> explainMaritalStatus",
 				"clientesBdGen derive(client_id = right(client_id, 5)) ~> unifyId",
 				"clientesLocation derive(client_id = right(client_id, 5),",
 				"          location = iif(isNull(location) || trim(location) == '', 'unknown',",
@@ -113,7 +116,7 @@
 				"          birth_date as date 'yyyy-MM-dd'",
 				"     ),",
 				"     errors: true) ~> cast1",
-				"trimNames, cast1 join(clientes@client_id == unifyId@client_id,",
+				"aggregate1, cast1 join(clientes@client_id == unifyId@client_id,",
 				"     joinType:'left',",
 				"     matchType:'exact',",
 				"     ignoreSpaces: false,",
@@ -134,6 +137,9 @@
 				"     ),",
 				"     skipDuplicateMapInputs: true,",
 				"     skipDuplicateMapOutputs: true) ~> select1",
+				"explainMaritalStatus sort(asc(client_id, true)) ~> sort1",
+				"sort1 aggregate(groupBy(client_id),",
+				"     each(match(name != 'client_id'), $$ = last($$))) ~> aggregate1",
 				"select1 sink(allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     input(",
