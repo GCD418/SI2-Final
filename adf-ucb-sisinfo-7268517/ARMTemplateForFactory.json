@@ -2233,9 +2233,6 @@
 					],
 					"transformations": [
 						{
-							"name": "explainMaritalStatus"
-						},
-						{
 							"name": "unifyId"
 						},
 						{
@@ -2258,6 +2255,9 @@
 						},
 						{
 							"name": "aggregate1"
+						},
+						{
+							"name": "cleanData"
 						}
 					],
 					"scriptLines": [
@@ -2291,18 +2291,11 @@
 						"     isolationLevel: 'READ_UNCOMMITTED',",
 						"     query: 'SELECT CID AS client_id,\\nCNTRY AS location\\nFROM BRONZE.Clientes_location',",
 						"     format: 'query') ~> clientesLocation",
-						"clientes derive(marital_status = iif(isNull(marital_status) || marital_status == '', 'unknown',",
-						"    iif(marital_status == 'M', 'married',",
-						"        iif(marital_status == 'S', 'single', marital_status)",
-						"    )",
-						"),",
-						"          firstname = trim(firstname),",
-						"          lastname = trim(lastname)) ~> explainMaritalStatus",
 						"clientesBdGen derive(client_id = right(client_id, 5)) ~> unifyId",
 						"clientesLocation derive(client_id = right(client_id, 5),",
 						"          location = iif(isNull(location) || trim(location) == '', 'unknown',",
 						"    iif(location == 'US' || location == 'USA', 'United States',",
-						"        iif(location == 'DE', 'Germany', location)",
+						"        iif(location == 'DE', 'Germany', trim(location))",
 						"    )",
 						")) ~> unifyClientId",
 						"unifyId cast(output(",
@@ -2319,7 +2312,7 @@
 						"     matchType:'exact',",
 						"     ignoreSpaces: false,",
 						"     broadcast: 'auto')~> join2",
-						"join2 select(mapColumn(",
+						"cleanData select(mapColumn(",
 						"          client_id = aggregate1@client_id,",
 						"          firstname,",
 						"          lastname,",
@@ -2330,9 +2323,20 @@
 						"     ),",
 						"     skipDuplicateMapInputs: true,",
 						"     skipDuplicateMapOutputs: true) ~> select1",
-						"explainMaritalStatus sort(asc(client_id, true)) ~> sort1",
+						"clientes sort(asc(client_id, true)) ~> sort1",
 						"sort1 aggregate(groupBy(client_id),",
 						"     each(match(name!='client_id'), $$ = last($$))) ~> aggregate1",
+						"join2 derive(firstname = trim(firstname),",
+						"          lastname = trim(lastname),",
+						"          marital_status = iif(isNull(marital_status) || trim(marital_status) == '', 'unknown',",
+						"    iif(trim(marital_status) == 'M', 'married',",
+						"            iif(trim(marital_status) == 'S', 'single', trim(marital_status))    )),",
+						"          location = iif(isNull(location) || trim(location) == '', 'Unknown',",
+						"   iif(trim(location) == 'US' || trim(location) == 'USA', 'United States',",
+						"          iif(trim(location) == 'DE', 'Germany', trim(location))    )),",
+						"          gender = iif(isNull(gender) || trim(gender) == '', 'Unknown',",
+						"    iif(trim(gender) == 'M', 'Male',",
+						"            iif(trim(gender) == 'F', 'Female', trim(gender))    ))) ~> cleanData",
 						"select1 sink(allowSchemaDrift: true,",
 						"     validateSchema: false,",
 						"     input(",
