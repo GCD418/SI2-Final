@@ -1,0 +1,76 @@
+{
+	"name": "GOLD_df_dim_producto",
+	"properties": {
+		"folder": {
+			"name": "GOLD"
+		},
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "Silver_products",
+						"type": "DatasetReference"
+					},
+					"name": "source1"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "Gold_dim_producto",
+						"type": "DatasetReference"
+					},
+					"name": "sink1"
+				}
+			],
+			"transformations": [
+				{
+					"name": "sort1"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          product_key as string,",
+				"          cost as integer,",
+				"          category as string,",
+				"          sub_category as string,",
+				"          product_name as string,",
+				"          maintenance as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     query: 'SELECT *\\nFROM SILVER.Products',",
+				"     format: 'query') ~> source1",
+				"source1 sort(asc(product_key, true)) ~> sort1",
+				"sort1 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          product_key as string,",
+				"          cost as integer,",
+				"          category as string,",
+				"          sub_category as string,",
+				"          product_name as string,",
+				"          maintenance as string",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError',",
+				"     mapColumn(",
+				"          product_key,",
+				"          cost,",
+				"          category,",
+				"          sub_category,",
+				"          product_name,",
+				"          maintenance",
+				"     )) ~> sink1"
+			]
+		}
+	}
+}

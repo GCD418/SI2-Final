@@ -1,0 +1,75 @@
+{
+	"name": "GOLD_df_hechos_ventas",
+	"properties": {
+		"folder": {
+			"name": "GOLD"
+		},
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "Silver_sales_detail",
+						"type": "DatasetReference"
+					},
+					"name": "source1"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "Gold_hechos_ventas",
+						"type": "DatasetReference"
+					},
+					"name": "sink1"
+				}
+			],
+			"transformations": [],
+			"scriptLines": [
+				"source(output(",
+				"          sale_id as string,",
+				"          product_key as string,",
+				"          client_id as string,",
+				"          order_date as date,",
+				"          ship_date as date,",
+				"          days_difference as integer,",
+				"          quantity as integer",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     query: 'SELECT *\\nFROM SILVER.Sales_detail',",
+				"     format: 'query') ~> source1",
+				"source1 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          id_venta as integer,",
+				"          sale_id as string,",
+				"          product_key as string,",
+				"          client_id as string,",
+				"          order_date as date,",
+				"          ship_date as date,",
+				"          days_difference as integer,",
+				"          quantity as integer",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError',",
+				"     mapColumn(",
+				"          sale_id,",
+				"          product_key,",
+				"          client_id,",
+				"          order_date,",
+				"          ship_date,",
+				"          days_difference,",
+				"          quantity",
+				"     )) ~> sink1"
+			]
+		}
+	}
+}

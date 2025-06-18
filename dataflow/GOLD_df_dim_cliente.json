@@ -1,0 +1,79 @@
+{
+	"name": "GOLD_df_dim_cliente",
+	"properties": {
+		"folder": {
+			"name": "GOLD"
+		},
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "Silver_clients",
+						"type": "DatasetReference"
+					},
+					"name": "source1"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "Gold_dim_cliente",
+						"type": "DatasetReference"
+					},
+					"name": "sink1"
+				}
+			],
+			"transformations": [
+				{
+					"name": "sort1"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          client_id as string,",
+				"          firstname as string,",
+				"          lastname as string,",
+				"          marital_status as string,",
+				"          gender as string,",
+				"          birth_date as date,",
+				"          location as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     query: 'SELECT * FROM SILVER.Clients',",
+				"     format: 'query') ~> source1",
+				"source1 sort(asc(client_id, true)) ~> sort1",
+				"sort1 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          client_id as string,",
+				"          firstname as string,",
+				"          lastname as string,",
+				"          marital_status as string,",
+				"          gender as string,",
+				"          birth_date as date,",
+				"          location as string",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError',",
+				"     mapColumn(",
+				"          client_id,",
+				"          firstname,",
+				"          lastname,",
+				"          marital_status,",
+				"          gender,",
+				"          birth_date,",
+				"          location",
+				"     )) ~> sink1"
+			]
+		}
+	}
+}

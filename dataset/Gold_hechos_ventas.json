@@ -1,0 +1,55 @@
+{
+	"name": "Gold_hechos_ventas",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "sql_dw_distribuidora",
+			"type": "LinkedServiceReference"
+		},
+		"folder": {
+			"name": "GOLD"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [
+			{
+				"name": "id_venta",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "sale_id",
+				"type": "varchar"
+			},
+			{
+				"name": "product_key",
+				"type": "varchar"
+			},
+			{
+				"name": "client_id",
+				"type": "varchar"
+			},
+			{
+				"name": "order_date",
+				"type": "date"
+			},
+			{
+				"name": "ship_date",
+				"type": "date"
+			},
+			{
+				"name": "days_difference",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "quantity",
+				"type": "int",
+				"precision": 10
+			}
+		],
+		"typeProperties": {
+			"schema": "GOLD",
+			"table": "Hechos_ventas"
+		}
+	}
+}
