@@ -27,6 +27,9 @@
 			"transformations": [
 				{
 					"name": "sort1"
+				},
+				{
+					"name": "filter1"
 				}
 			],
 			"scriptLines": [
@@ -45,7 +48,8 @@
 				"     query: 'SELECT * FROM SILVER.Clients',",
 				"     format: 'query') ~> source1",
 				"source1 sort(asc(client_id, true)) ~> sort1",
-				"sort1 sink(allowSchemaDrift: true,",
+				"sort1 filter(!isNull(client_id)) ~> filter1",
+				"filter1 sink(allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     input(",
 				"          client_id as string,",
