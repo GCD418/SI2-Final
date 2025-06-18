@@ -49,6 +49,9 @@
 				},
 				{
 					"name": "cast1"
+				},
+				{
+					"name": "derivedColumn2"
 				}
 			],
 			"scriptLines": [
@@ -76,7 +79,7 @@
 				"     format: 'query') ~> catMant",
 				"catMant derive(category_key = replace(category_key, '_', '-')) ~> derivedColumn1",
 				"sort1 aggregate(groupBy(product_key),",
-				"     each(match(name != 'product_key'), $$ = last($$))) ~> aggregate1",
+				"     each(match(name!='product_key'), $$ = last($$))) ~> aggregate1",
 				"producto sort(asc(product_key, true)) ~> sort1",
 				"cast1, derivedColumn1 join(aggregate1@category_key == derivedColumn1@category_key,",
 				"     joinType:'left',",
@@ -97,7 +100,10 @@
 				"          cost as integer",
 				"     ),",
 				"     errors: true) ~> cast1",
-				"select1 sink(allowSchemaDrift: true,",
+				"select1 derive(category = iif(isNull(category) || trim(category) == '', 'Unknown', trim(category)),",
+				"          sub_category = iif(isNull(sub_category) || trim(sub_category) == '', 'Unknown', trim(sub_category)),",
+				"          maintenance = iif(isNull(maintenance) || trim(maintenance) == '', 'Unknown', trim(maintenance))) ~> derivedColumn2",
+				"derivedColumn2 sink(allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     input(",
 				"          product_key as string,",
