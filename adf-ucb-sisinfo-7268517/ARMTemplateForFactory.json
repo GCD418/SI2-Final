@@ -1568,9 +1568,6 @@
 							"name": "explainMaritalStatus"
 						},
 						{
-							"name": "trimNames"
-						},
-						{
 							"name": "unifyId"
 						},
 						{
@@ -1587,6 +1584,12 @@
 						},
 						{
 							"name": "select1"
+						},
+						{
+							"name": "sort1"
+						},
+						{
+							"name": "aggregate1"
 						}
 					],
 					"scriptLines": [
@@ -1624,9 +1627,9 @@
 						"    iif(marital_status == 'M', 'married',",
 						"        iif(marital_status == 'S', 'single', marital_status)",
 						"    )",
-						")) ~> explainMaritalStatus",
-						"explainMaritalStatus derive(firstname = trim(firstname),",
-						"          lastname = trim(lastname)) ~> trimNames",
+						"),",
+						"          firstname = trim(firstname),",
+						"          lastname = trim(lastname)) ~> explainMaritalStatus",
 						"clientesBdGen derive(client_id = right(client_id, 5)) ~> unifyId",
 						"clientesLocation derive(client_id = right(client_id, 5),",
 						"          location = iif(isNull(location) || trim(location) == '', 'unknown',",
@@ -1638,18 +1641,18 @@
 						"          birth_date as date 'yyyy-MM-dd'",
 						"     ),",
 						"     errors: true) ~> cast1",
-						"trimNames, cast1 join(clientes@client_id == unifyId@client_id,",
+						"aggregate1, cast1 join(aggregate1@client_id == unifyId@client_id,",
 						"     joinType:'left',",
 						"     matchType:'exact',",
 						"     ignoreSpaces: false,",
 						"     broadcast: 'auto')~> join1",
-						"join1, unifyClientId join(clientes@client_id == unifyClientId@client_id,",
+						"join1, unifyClientId join(aggregate1@client_id == unifyClientId@client_id,",
 						"     joinType:'left',",
 						"     matchType:'exact',",
 						"     ignoreSpaces: false,",
 						"     broadcast: 'auto')~> join2",
 						"join2 select(mapColumn(",
-						"          client_id = clientes@client_id,",
+						"          client_id = aggregate1@client_id,",
 						"          firstname,",
 						"          lastname,",
 						"          marital_status,",
@@ -1659,6 +1662,9 @@
 						"     ),",
 						"     skipDuplicateMapInputs: true,",
 						"     skipDuplicateMapOutputs: true) ~> select1",
+						"explainMaritalStatus sort(asc(client_id, true)) ~> sort1",
+						"sort1 aggregate(groupBy(client_id),",
+						"     each(match(name != 'client_id'), $$ = last($$))) ~> aggregate1",
 						"select1 sink(allowSchemaDrift: true,",
 						"     validateSchema: false,",
 						"     input(",
@@ -1696,6 +1702,143 @@
 				"[concat(variables('factoryId'), '/datasets/bronze_sql_clientes_bd_gen')]",
 				"[concat(variables('factoryId'), '/datasets/bronze_sql_clientes_location')]",
 				"[concat(variables('factoryId'), '/datasets/Silver_clients')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/Silver_df_products')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"folder": {
+					"name": "SILVER"
+				},
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "bronze_sql_productos",
+								"type": "DatasetReference"
+							},
+							"name": "producto"
+						},
+						{
+							"dataset": {
+								"referenceName": "bronze_sql_productos_cat_mant",
+								"type": "DatasetReference"
+							},
+							"name": "catMant"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "Silver_products",
+								"type": "DatasetReference"
+							},
+							"name": "sink1"
+						}
+					],
+					"transformations": [
+						{
+							"name": "derivedColumn1"
+						},
+						{
+							"name": "aggregate1"
+						},
+						{
+							"name": "sort1"
+						},
+						{
+							"name": "join1"
+						},
+						{
+							"name": "select1"
+						},
+						{
+							"name": "cast1"
+						}
+					],
+					"scriptLines": [
+						"source(output(",
+						"          product_key as string,",
+						"          category_key as string,",
+						"          product_name as string,",
+						"          cost as string",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     isolationLevel: 'READ_UNCOMMITTED',",
+						"     query: 'SELECT SUBSTRING(prd_key, 7) AS product_key,\\nSUBSTRING(prd_key, 0, 6) AS category_key,\\nprd_nm AS product_name,\\nprd_cost AS cost\\nFROM BRONZE.Productos',",
+						"     format: 'query') ~> producto",
+						"source(output(",
+						"          category_key as string,",
+						"          category as string,",
+						"          sub_category as string,",
+						"          maintenance as string",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     isolationLevel: 'READ_UNCOMMITTED',",
+						"     query: 'SELECT ID AS category_key,\\nCAT AS category,\\nSUBCAT AS sub_category,\\nMAINTENANCE AS maintenance\\nFROM BRONZE.Productos_Cat_Mant',",
+						"     format: 'query') ~> catMant",
+						"catMant derive(category_key = replace(category_key, '_', '-')) ~> derivedColumn1",
+						"sort1 aggregate(groupBy(product_key),",
+						"     each(match(name != 'product_key'), $$ = last($$))) ~> aggregate1",
+						"producto sort(asc(product_key, true)) ~> sort1",
+						"cast1, derivedColumn1 join(aggregate1@category_key == derivedColumn1@category_key,",
+						"     joinType:'left',",
+						"     matchType:'exact',",
+						"     ignoreSpaces: false,",
+						"     broadcast: 'auto')~> join1",
+						"join1 select(mapColumn(",
+						"          product_key,",
+						"          product_name,",
+						"          cost,",
+						"          category,",
+						"          sub_category,",
+						"          maintenance",
+						"     ),",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> select1",
+						"aggregate1 cast(output(",
+						"          cost as integer",
+						"     ),",
+						"     errors: true) ~> cast1",
+						"select1 sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     input(",
+						"          product_key as string,",
+						"          cost as integer,",
+						"          category as string,",
+						"          sub_category as string,",
+						"          product_name as string,",
+						"          maintenance as string",
+						"     ),",
+						"     deletable:false,",
+						"     insertable:true,",
+						"     updateable:false,",
+						"     upsertable:false,",
+						"     truncate:true,",
+						"     format: 'table',",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     errorHandlingOption: 'stopOnFirstError',",
+						"     mapColumn(",
+						"          product_key,",
+						"          cost,",
+						"          category,",
+						"          sub_category,",
+						"          product_name,",
+						"          maintenance",
+						"     )) ~> sink1"
+					]
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/bronze_sql_productos')]",
+				"[concat(variables('factoryId'), '/datasets/bronze_sql_productos_cat_mant')]",
+				"[concat(variables('factoryId'), '/datasets/Silver_products')]"
 			]
 		}
 	]
