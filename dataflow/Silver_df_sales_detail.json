@@ -1,0 +1,98 @@
+{
+	"name": "Silver_df_sales_detail",
+	"properties": {
+		"folder": {
+			"name": "SILVER"
+		},
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "bronze_sql_detalle_ventas",
+						"type": "DatasetReference"
+					},
+					"name": "source1"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "Silver_sales_detail",
+						"type": "DatasetReference"
+					},
+					"name": "sink1"
+				}
+			],
+			"transformations": [
+				{
+					"name": "derivedColumn1"
+				},
+				{
+					"name": "sort1"
+				},
+				{
+					"name": "aggregate1"
+				},
+				{
+					"name": "cast1"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          sale_id as string,",
+				"          product_key as string,",
+				"          client_id as string,",
+				"          order_date as string,",
+				"          ship_date as string,",
+				"          quantity as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     query: 'SELECT sls_ord_num AS sale_id,\\nsls_prd_key AS product_key,\\nsls_cust_id AS client_id,\\nsls_order_dt AS order_date,\\nsls_ship_dt AS ship_date,\\nsls_quantity AS quantity\\nFROM BRONZE.Detalle_ventas',",
+				"     format: 'query') ~> source1",
+				"source1 derive(order_date = toDate(order_date, 'yyyyMMdd'),",
+				"          ship_date = toDate(ship_date, 'yyyyMMdd'),",
+				"          days_difference = toInteger((toTimestamp(ship_date, 'yyyyMMdd') - toTimestamp(order_date, 'yyyyMMdd')) / 86400000) ) ~> derivedColumn1",
+				"derivedColumn1 sort(asc(sale_id, true)) ~> sort1",
+				"sort1 aggregate(groupBy(sale_id),",
+				"     each(match(name != 'sale_id'), $$ = last($$))) ~> aggregate1",
+				"aggregate1 cast(output(",
+				"          quantity as integer",
+				"     ),",
+				"     errors: true) ~> cast1",
+				"cast1 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          sale_id as string,",
+				"          order_number as string,",
+				"          product_key as string,",
+				"          client_id as string,",
+				"          order_date as date,",
+				"          ship_date as date,",
+				"          days_difference as integer,",
+				"          quantity as integer",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     truncate:true,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError',",
+				"     mapColumn(",
+				"          sale_id,",
+				"          product_key,",
+				"          client_id,",
+				"          order_date,",
+				"          ship_date,",
+				"          days_difference,",
+				"          quantity",
+				"     )) ~> sink1"
+			]
+		}
+	}
+}
