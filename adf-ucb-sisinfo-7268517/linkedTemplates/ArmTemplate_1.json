@@ -575,9 +575,6 @@
 							"name": "sort1"
 						},
 						{
-							"name": "aggregate1"
-						},
-						{
 							"name": "cast1"
 						}
 					],
@@ -599,9 +596,7 @@
 						"          ship_date = toDate(ship_date, 'yyyyMMdd'),",
 						"          days_difference = toInteger((toTimestamp(ship_date, 'yyyyMMdd') - toTimestamp(order_date, 'yyyyMMdd')) / 86400000) ) ~> derivedColumn1",
 						"derivedColumn1 sort(asc(sale_id, true)) ~> sort1",
-						"sort1 aggregate(groupBy(sale_id),",
-						"     each(match(name != 'sale_id'), $$ = last($$))) ~> aggregate1",
-						"aggregate1 cast(output(",
+						"sort1 cast(output(",
 						"          quantity as integer",
 						"     ),",
 						"     errors: true) ~> cast1",
@@ -926,6 +921,134 @@
 			},
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/dataflows/BRONZE_df_productos_cat_mant')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/SILVER_PL')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Data flow1",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "Silver_df_clients",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"clientes": {},
+									"clientesBdGen": {},
+									"clientesLocation": {},
+									"sink1": {}
+								}
+							},
+							"staging": {},
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
+							},
+							"traceLevel": "Fine"
+						}
+					},
+					{
+						"name": "Data flow2",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [
+							{
+								"activity": "Data flow1",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "Silver_df_products",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"producto": {},
+									"catMant": {},
+									"sink1": {}
+								}
+							},
+							"staging": {},
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
+							},
+							"traceLevel": "Fine"
+						}
+					},
+					{
+						"name": "Data flow3",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [
+							{
+								"activity": "Data flow2",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "Silver_df_sales_detail",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"source1": {},
+									"sink1": {}
+								}
+							},
+							"staging": {},
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
+							},
+							"traceLevel": "Fine"
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"folder": {
+					"name": "SILVER"
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/dataflows/Silver_df_clients')]",
+				"[concat(variables('factoryId'), '/dataflows/Silver_df_products')]",
+				"[concat(variables('factoryId'), '/dataflows/Silver_df_sales_detail')]"
 			]
 		}
 	]
