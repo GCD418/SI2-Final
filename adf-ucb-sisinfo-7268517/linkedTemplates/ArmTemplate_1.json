@@ -13,6 +13,204 @@
 	},
 	"resources": [
 		{
+			"name": "[concat(parameters('factoryName'), '/BRONZE_df_clientes')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"folder": {
+					"name": "BRONZE"
+				},
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "clientes_csv",
+								"type": "DatasetReference"
+							},
+							"name": "source1"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "bronze_sql_clientes",
+								"type": "DatasetReference"
+							},
+							"name": "sink1"
+						}
+					],
+					"transformations": [],
+					"scriptLines": [
+						"source(output(",
+						"          cst_id as string,",
+						"          cst_key as string,",
+						"          cst_firstname as string,",
+						"          cst_lastname as string,",
+						"          cst_marital_status as string,",
+						"          cst_gndr as string",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     ignoreNoFilesFound: false) ~> source1",
+						"source1 sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     input(",
+						"          cst_id as string,",
+						"          cst_key as string,",
+						"          cst_firstname as string,",
+						"          cst_lastname as string,",
+						"          cst_marital_status as string,",
+						"          cst_gndr as string",
+						"     ),",
+						"     deletable:false,",
+						"     insertable:true,",
+						"     updateable:false,",
+						"     upsertable:false,",
+						"     truncate:true,",
+						"     format: 'table',",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     errorHandlingOption: 'stopOnFirstError',",
+						"     mapColumn(",
+						"          cst_id,",
+						"          cst_key,",
+						"          cst_firstname,",
+						"          cst_lastname,",
+						"          cst_marital_status,",
+						"          cst_gndr",
+						"     )) ~> sink1"
+					]
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/BRONZE_df_clientes_bd_gen')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"folder": {
+					"name": "BRONZE"
+				},
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "Clientes_BD_GEN_csv",
+								"type": "DatasetReference"
+							},
+							"name": "source1"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "bronze_sql_clientes_bd_gen",
+								"type": "DatasetReference"
+							},
+							"name": "sink1"
+						}
+					],
+					"transformations": [],
+					"scriptLines": [
+						"source(output(",
+						"          CID as string,",
+						"          BDATE as string,",
+						"          GEN as string",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     ignoreNoFilesFound: false) ~> source1",
+						"source1 sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     input(",
+						"          CID as string,",
+						"          BDATE as string,",
+						"          GEN as string",
+						"     ),",
+						"     deletable:false,",
+						"     insertable:true,",
+						"     updateable:false,",
+						"     upsertable:false,",
+						"     truncate:true,",
+						"     format: 'table',",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     errorHandlingOption: 'stopOnFirstError',",
+						"     mapColumn(",
+						"          CID,",
+						"          BDATE,",
+						"          GEN",
+						"     )) ~> sink1"
+					]
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/BRONZE_df_clientes_location')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"folder": {
+					"name": "BRONZE"
+				},
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "Clientes_location_csv",
+								"type": "DatasetReference"
+							},
+							"name": "source1"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "bronze_sql_clientes_location",
+								"type": "DatasetReference"
+							},
+							"name": "sink1"
+						}
+					],
+					"transformations": [],
+					"scriptLines": [
+						"source(output(",
+						"          CID as string,",
+						"          CNTRY as string",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     ignoreNoFilesFound: false) ~> source1",
+						"source1 sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     input(",
+						"          CID as string,",
+						"          CNTRY as string",
+						"     ),",
+						"     deletable:false,",
+						"     insertable:true,",
+						"     updateable:false,",
+						"     upsertable:false,",
+						"     truncate:true,",
+						"     format: 'table',",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     errorHandlingOption: 'stopOnFirstError',",
+						"     mapColumn(",
+						"          CID,",
+						"          CNTRY",
+						"     )) ~> sink1"
+					]
+				}
+			},
+			"dependsOn": []
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/BRONZE_df_detalle_ventas')]",
 			"type": "Microsoft.DataFactory/factories/dataflows",
 			"apiVersion": "2018-06-01",
@@ -222,6 +420,249 @@
 						"          CAT,",
 						"          SUBCAT,",
 						"          MAINTENANCE",
+						"     )) ~> sink1"
+					]
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/GOLD_df_dim_cliente')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"folder": {
+					"name": "GOLD"
+				},
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "Silver_clients",
+								"type": "DatasetReference"
+							},
+							"name": "source1"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "Gold_dim_cliente",
+								"type": "DatasetReference"
+							},
+							"name": "sink1"
+						}
+					],
+					"transformations": [
+						{
+							"name": "sort1"
+						},
+						{
+							"name": "filter1"
+						}
+					],
+					"scriptLines": [
+						"source(output(",
+						"          client_id as string,",
+						"          firstname as string,",
+						"          lastname as string,",
+						"          marital_status as string,",
+						"          gender as string,",
+						"          birth_date as date,",
+						"          location as string",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     isolationLevel: 'READ_UNCOMMITTED',",
+						"     query: 'SELECT * FROM SILVER.Clients',",
+						"     format: 'query') ~> source1",
+						"source1 sort(asc(client_id, true)) ~> sort1",
+						"sort1 filter(!isNull(client_id)) ~> filter1",
+						"filter1 sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     input(",
+						"          client_id as string,",
+						"          firstname as string,",
+						"          lastname as string,",
+						"          marital_status as string,",
+						"          gender as string,",
+						"          birth_date as date,",
+						"          location as string",
+						"     ),",
+						"     deletable:false,",
+						"     insertable:true,",
+						"     updateable:false,",
+						"     upsertable:false,",
+						"     format: 'table',",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     errorHandlingOption: 'stopOnFirstError',",
+						"     mapColumn(",
+						"          client_id,",
+						"          firstname,",
+						"          lastname,",
+						"          marital_status,",
+						"          gender,",
+						"          birth_date,",
+						"          location",
+						"     )) ~> sink1"
+					]
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/GOLD_df_dim_producto')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"folder": {
+					"name": "GOLD"
+				},
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "Silver_products",
+								"type": "DatasetReference"
+							},
+							"name": "source1"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "Gold_dim_producto",
+								"type": "DatasetReference"
+							},
+							"name": "sink1"
+						}
+					],
+					"transformations": [
+						{
+							"name": "sort1"
+						}
+					],
+					"scriptLines": [
+						"source(output(",
+						"          product_key as string,",
+						"          cost as integer,",
+						"          category as string,",
+						"          sub_category as string,",
+						"          product_name as string,",
+						"          maintenance as string",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     isolationLevel: 'READ_UNCOMMITTED',",
+						"     query: 'SELECT *\\nFROM SILVER.Products',",
+						"     format: 'query') ~> source1",
+						"source1 sort(asc(product_key, true)) ~> sort1",
+						"sort1 sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     input(",
+						"          product_key as string,",
+						"          cost as integer,",
+						"          category as string,",
+						"          sub_category as string,",
+						"          product_name as string,",
+						"          maintenance as string",
+						"     ),",
+						"     deletable:false,",
+						"     insertable:true,",
+						"     updateable:false,",
+						"     upsertable:false,",
+						"     format: 'table',",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     errorHandlingOption: 'stopOnFirstError',",
+						"     mapColumn(",
+						"          product_key,",
+						"          cost,",
+						"          category,",
+						"          sub_category,",
+						"          product_name,",
+						"          maintenance",
+						"     )) ~> sink1"
+					]
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/GOLD_df_hechos_ventas')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"folder": {
+					"name": "GOLD"
+				},
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "Silver_sales_detail",
+								"type": "DatasetReference"
+							},
+							"name": "source1"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "Gold_hechos_ventas",
+								"type": "DatasetReference"
+							},
+							"name": "sink1"
+						}
+					],
+					"transformations": [],
+					"scriptLines": [
+						"source(output(",
+						"          sale_id as string,",
+						"          product_key as string,",
+						"          client_id as string,",
+						"          order_date as date,",
+						"          ship_date as date,",
+						"          days_difference as integer,",
+						"          quantity as integer",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     isolationLevel: 'READ_UNCOMMITTED',",
+						"     query: 'SELECT *\\nFROM SILVER.Sales_detail',",
+						"     format: 'query') ~> source1",
+						"source1 sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     input(",
+						"          id_venta as integer,",
+						"          sale_id as string,",
+						"          product_key as string,",
+						"          client_id as string,",
+						"          order_date as date,",
+						"          ship_date as date,",
+						"          days_difference as integer,",
+						"          quantity as integer",
+						"     ),",
+						"     deletable:false,",
+						"     insertable:true,",
+						"     updateable:false,",
+						"     upsertable:false,",
+						"     format: 'table',",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     errorHandlingOption: 'stopOnFirstError',",
+						"     mapColumn(",
+						"          sale_id,",
+						"          product_key,",
+						"          client_id,",
+						"          order_date,",
+						"          ship_date,",
+						"          days_difference,",
+						"          quantity",
 						"     )) ~> sink1"
 					]
 				}
@@ -594,7 +1035,7 @@
 						"     format: 'query') ~> source1",
 						"source1 derive(order_date = toDate(order_date, 'yyyyMMdd'),",
 						"          ship_date = toDate(ship_date, 'yyyyMMdd'),",
-						"          days_difference = toInteger((toTimestamp(ship_date, 'yyyyMMdd') - toTimestamp(order_date, 'yyyyMMdd')) / 86400000) ) ~> derivedColumn1",
+						"          days_difference = toInteger((toTimestamp(ship_date, 'yyyyMMdd') - toTimestamp(order_date, 'yyyyMMdd')) / 86400000)) ~> derivedColumn1",
 						"derivedColumn1 sort(asc(sale_id, true)) ~> sort1",
 						"sort1 cast(output(",
 						"          quantity as integer",
@@ -680,7 +1121,9 @@
 				},
 				"annotations": []
 			},
-			"dependsOn": []
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/dataflows/BRONZE_df_clientes')]"
+			]
 		},
 		{
 			"name": "[concat(parameters('factoryName'), '/BRONZE_PL_clientes_bd_gen')]",
@@ -727,7 +1170,9 @@
 				},
 				"annotations": []
 			},
-			"dependsOn": []
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/dataflows/BRONZE_df_clientes_bd_gen')]"
+			]
 		},
 		{
 			"name": "[concat(parameters('factoryName'), '/BRONZE_PL_clientes_location')]",
@@ -774,7 +1219,9 @@
 				},
 				"annotations": []
 			},
-			"dependsOn": []
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/dataflows/BRONZE_df_clientes_location')]"
+			]
 		},
 		{
 			"name": "[concat(parameters('factoryName'), '/BRONZE_PL_detalle_ventas')]",
@@ -921,6 +1368,131 @@
 			},
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/dataflows/BRONZE_df_productos_cat_mant')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/GOLD_ETL_VENTAS')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "df_dim_cliente",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "GOLD_df_dim_cliente",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"source1": {},
+									"sink1": {}
+								}
+							},
+							"staging": {},
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
+							},
+							"traceLevel": "Fine"
+						}
+					},
+					{
+						"name": "df_dim_producto",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [
+							{
+								"activity": "df_dim_cliente",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "GOLD_df_dim_producto",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"source1": {},
+									"sink1": {}
+								}
+							},
+							"staging": {},
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
+							},
+							"traceLevel": "Fine"
+						}
+					},
+					{
+						"name": "df_hechos_ventas",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [
+							{
+								"activity": "df_dim_producto",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "GOLD_df_hechos_ventas",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"source1": {},
+									"sink1": {}
+								}
+							},
+							"staging": {},
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
+							},
+							"traceLevel": "Fine"
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"folder": {
+					"name": "GOLD"
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/dataflows/GOLD_df_dim_cliente')]",
+				"[concat(variables('factoryId'), '/dataflows/GOLD_df_dim_producto')]",
+				"[concat(variables('factoryId'), '/dataflows/GOLD_df_hechos_ventas')]"
 			]
 		},
 		{
