@@ -32,9 +32,6 @@
 					"name": "sort1"
 				},
 				{
-					"name": "aggregate1"
-				},
-				{
 					"name": "cast1"
 				}
 			],
@@ -56,9 +53,7 @@
 				"          ship_date = toDate(ship_date, 'yyyyMMdd'),",
 				"          days_difference = toInteger((toTimestamp(ship_date, 'yyyyMMdd') - toTimestamp(order_date, 'yyyyMMdd')) / 86400000) ) ~> derivedColumn1",
 				"derivedColumn1 sort(asc(sale_id, true)) ~> sort1",
-				"sort1 aggregate(groupBy(sale_id),",
-				"     each(match(name != 'sale_id'), $$ = last($$))) ~> aggregate1",
-				"aggregate1 cast(output(",
+				"sort1 cast(output(",
 				"          quantity as integer",
 				"     ),",
 				"     errors: true) ~> cast1",
