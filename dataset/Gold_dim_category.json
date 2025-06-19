@@ -1,0 +1,32 @@
+{
+	"name": "Gold_dim_category",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "sql_dw_distribuidora",
+			"type": "LinkedServiceReference"
+		},
+		"folder": {
+			"name": "GOLD"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [
+			{
+				"name": "category",
+				"type": "varchar"
+			},
+			{
+				"name": "sub_category",
+				"type": "varchar"
+			},
+			{
+				"name": "maintenance",
+				"type": "varchar"
+			}
+		],
+		"typeProperties": {
+			"schema": "GOLD",
+			"table": "DIM_category"
+		}
+	}
+}

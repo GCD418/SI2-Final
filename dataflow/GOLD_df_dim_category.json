@@ -1,5 +1,5 @@
 {
-	"name": "GOLD_df_dim_producto",
+	"name": "GOLD_df_dim_category",
 	"properties": {
 		"folder": {
 			"name": "GOLD"
@@ -18,7 +18,7 @@
 			"sinks": [
 				{
 					"dataset": {
-						"referenceName": "Gold_dim_producto",
+						"referenceName": "Gold_dim_category",
 						"type": "DatasetReference"
 					},
 					"name": "sink1"
@@ -31,25 +31,21 @@
 			],
 			"scriptLines": [
 				"source(output(",
-				"          product_key as string,",
-				"          cost as integer,",
-				"          product_name as string,",
-				"          category as string",
+				"          sub_category as string,",
+				"          category as string,",
+				"          maintenance as string",
 				"     ),",
 				"     allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     isolationLevel: 'READ_UNCOMMITTED',",
-				"     query: 'SELECT product_key,\\ncost, \\nproduct_name,\\ncategory\\nFROM SILVER.Products',",
+				"     query: 'SELECT distinct(sub_category),\\ncategory,\\nmaintenance\\nFROM SILVER.Products',",
 				"     format: 'query') ~> source1",
-				"source1 sort(asc(product_key, true)) ~> sort1",
+				"source1 sort(asc(sub_category, true)) ~> sort1",
 				"sort1 sink(allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     input(",
-				"          product_key as string,",
-				"          cost as integer,",
 				"          category as string,",
 				"          sub_category as string,",
-				"          product_name as string,",
 				"          maintenance as string",
 				"     ),",
 				"     deletable:false,",
@@ -61,10 +57,9 @@
 				"     skipDuplicateMapOutputs: true,",
 				"     errorHandlingOption: 'stopOnFirstError',",
 				"     mapColumn(",
-				"          product_key,",
-				"          cost,",
 				"          category,",
-				"          product_name",
+				"          sub_category,",
+				"          maintenance",
 				"     )) ~> sink1"
 			]
 		}
