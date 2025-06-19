@@ -102,7 +102,7 @@
 				"     errors: true) ~> cast1",
 				"select1 derive(category = iif(isNull(category) || trim(category) == '', 'Unknown', trim(category)),",
 				"          sub_category = iif(isNull(sub_category) || trim(sub_category) == '', 'Unknown', trim(sub_category)),",
-				"          maintenance = iif(isNull(maintenance) || trim(maintenance) == '', 'Unknown', trim(maintenance))) ~> derivedColumn2",
+				"          maintenance = iif(isNull(maintenance) || trim(maintenance) == '', '---', trim(maintenance))) ~> derivedColumn2",
 				"derivedColumn2 sink(allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     input(",
