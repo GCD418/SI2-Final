@@ -729,7 +729,28 @@
 								"referenceName": "Silver_sales_detail",
 								"type": "DatasetReference"
 							},
-							"name": "source1"
+							"name": "base"
+						},
+						{
+							"dataset": {
+								"referenceName": "Gold_dim_category",
+								"type": "DatasetReference"
+							},
+							"name": "dimCategory"
+						},
+						{
+							"dataset": {
+								"referenceName": "Gold_dim_cliente",
+								"type": "DatasetReference"
+							},
+							"name": "dimCliente"
+						},
+						{
+							"dataset": {
+								"referenceName": "Gold_dim_producto",
+								"type": "DatasetReference"
+							},
+							"name": "dimProducto"
 						}
 					],
 					"sinks": [
@@ -741,7 +762,20 @@
 							"name": "sink1"
 						}
 					],
-					"transformations": [],
+					"transformations": [
+						{
+							"name": "lookup1"
+						},
+						{
+							"name": "lookup2"
+						},
+						{
+							"name": "lookup3"
+						},
+						{
+							"name": "select1"
+						}
+					],
 					"scriptLines": [
 						"source(output(",
 						"          sale_id as string,",
@@ -756,8 +790,66 @@
 						"     validateSchema: false,",
 						"     isolationLevel: 'READ_UNCOMMITTED',",
 						"     query: 'SELECT *\\nFROM SILVER.Sales_detail',",
-						"     format: 'query') ~> source1",
-						"source1 sink(allowSchemaDrift: true,",
+						"     format: 'query') ~> base",
+						"source(output(",
+						"          sub_category as string,",
+						"          category as string,",
+						"          maintenance as string",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     isolationLevel: 'READ_UNCOMMITTED',",
+						"     query: 'SELECT * FROM GOLD.DIM_category',",
+						"     format: 'query') ~> dimCategory",
+						"source(output(",
+						"          client_id as string,",
+						"          firstname as string,",
+						"          lastname as string,",
+						"          marital_status as string,",
+						"          gender as string,",
+						"          birth_date as date,",
+						"          location as string",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     isolationLevel: 'READ_UNCOMMITTED',",
+						"     query: 'SELECT * FROM GOLD.dim_cliente',",
+						"     format: 'query') ~> dimCliente",
+						"source(output(",
+						"          product_key as string,",
+						"          cost as integer,",
+						"          product_name as string,",
+						"          sub_category as string",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     isolationLevel: 'READ_UNCOMMITTED',",
+						"     query: 'SELECT * FROM GOLD.dim_producto',",
+						"     format: 'query') ~> dimProducto",
+						"base, dimCliente lookup(base@client_id == dimCliente@client_id,",
+						"     multiple: false,",
+						"     pickup: 'any',",
+						"     broadcast: 'auto')~> lookup1",
+						"dimProducto, dimCategory lookup(dimProducto@sub_category == dimCategory@sub_category,",
+						"     multiple: false,",
+						"     pickup: 'any',",
+						"     broadcast: 'auto')~> lookup2",
+						"lookup1, lookup2 lookup(base@product_key == dimProducto@product_key,",
+						"     multiple: false,",
+						"     pickup: 'any',",
+						"     broadcast: 'auto')~> lookup3",
+						"lookup3 select(mapColumn(",
+						"          sale_id,",
+						"          order_date,",
+						"          ship_date,",
+						"          days_difference,",
+						"          quantity,",
+						"          client_id = dimCliente@client_id,",
+						"          product_key = dimProducto@product_key",
+						"     ),",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> select1",
+						"select1 sink(allowSchemaDrift: true,",
 						"     validateSchema: false,",
 						"     input(",
 						"          id_venta as integer,",
