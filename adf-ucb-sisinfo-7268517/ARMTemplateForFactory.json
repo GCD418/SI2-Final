@@ -728,6 +728,43 @@
 			]
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/Gold_dim_category')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "sql_dw_distribuidora",
+					"type": "LinkedServiceReference"
+				},
+				"folder": {
+					"name": "GOLD"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [
+					{
+						"name": "category",
+						"type": "varchar"
+					},
+					{
+						"name": "sub_category",
+						"type": "varchar"
+					},
+					{
+						"name": "maintenance",
+						"type": "varchar"
+					}
+				],
+				"typeProperties": {
+					"schema": "GOLD",
+					"table": "DIM_category"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/sql_dw_distribuidora')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/Gold_dim_cliente')]",
 			"type": "Microsoft.DataFactory/factories/datasets",
 			"apiVersion": "2018-06-01",
@@ -1938,6 +1975,79 @@
 			]
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/GOLD_df_dim_category')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"folder": {
+					"name": "GOLD"
+				},
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "Silver_products",
+								"type": "DatasetReference"
+							},
+							"name": "source1"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "Gold_dim_category",
+								"type": "DatasetReference"
+							},
+							"name": "sink1"
+						}
+					],
+					"transformations": [
+						{
+							"name": "sort1"
+						}
+					],
+					"scriptLines": [
+						"source(output(",
+						"          sub_category as string,",
+						"          category as string,",
+						"          maintenance as string",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     isolationLevel: 'READ_UNCOMMITTED',",
+						"     query: 'SELECT distinct(sub_category),\\ncategory,\\nmaintenance\\nFROM SILVER.Products',",
+						"     format: 'query') ~> source1",
+						"source1 sort(asc(sub_category, true)) ~> sort1",
+						"sort1 sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     input(",
+						"          category as string,",
+						"          sub_category as string,",
+						"          maintenance as string",
+						"     ),",
+						"     deletable:false,",
+						"     insertable:true,",
+						"     updateable:false,",
+						"     upsertable:false,",
+						"     format: 'table',",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     errorHandlingOption: 'stopOnFirstError',",
+						"     mapColumn(",
+						"          category,",
+						"          sub_category,",
+						"          maintenance",
+						"     )) ~> sink1"
+					]
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/Silver_products')]",
+				"[concat(variables('factoryId'), '/datasets/Gold_dim_category')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/GOLD_df_dim_cliente')]",
 			"type": "Microsoft.DataFactory/factories/dataflows",
 			"apiVersion": "2018-06-01",
@@ -2063,15 +2173,13 @@
 						"source(output(",
 						"          product_key as string,",
 						"          cost as integer,",
-						"          category as string,",
-						"          sub_category as string,",
 						"          product_name as string,",
-						"          maintenance as string",
+						"          category as string",
 						"     ),",
 						"     allowSchemaDrift: true,",
 						"     validateSchema: false,",
 						"     isolationLevel: 'READ_UNCOMMITTED',",
-						"     query: 'SELECT *\\nFROM SILVER.Products',",
+						"     query: 'SELECT product_key,\\ncost, \\nproduct_name,\\ncategory\\nFROM SILVER.Products',",
 						"     format: 'query') ~> source1",
 						"source1 sort(asc(product_key, true)) ~> sort1",
 						"sort1 sink(allowSchemaDrift: true,",
@@ -2096,9 +2204,7 @@
 						"          product_key,",
 						"          cost,",
 						"          category,",
-						"          sub_category,",
-						"          product_name,",
-						"          maintenance",
+						"          product_name",
 						"     )) ~> sink1"
 					]
 				}
@@ -2429,6 +2535,9 @@
 						},
 						{
 							"name": "cast1"
+						},
+						{
+							"name": "derivedColumn2"
 						}
 					],
 					"scriptLines": [
@@ -2477,7 +2586,10 @@
 						"          cost as integer",
 						"     ),",
 						"     errors: true) ~> cast1",
-						"select1 sink(allowSchemaDrift: true,",
+						"select1 derive(category = iif(isNull(category) || trim(category) == '', 'Unknown', trim(category)),",
+						"          sub_category = iif(isNull(sub_category) || trim(sub_category) == '', 'Unknown', trim(sub_category)),",
+						"          maintenance = iif(isNull(maintenance) || trim(maintenance) == '', '---', trim(maintenance))) ~> derivedColumn2",
+						"derivedColumn2 sink(allowSchemaDrift: true,",
 						"     validateSchema: false,",
 						"     input(",
 						"          product_key as string,",

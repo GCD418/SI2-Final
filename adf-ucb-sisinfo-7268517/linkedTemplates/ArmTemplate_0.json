@@ -216,6 +216,43 @@
 			]
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/Gold_dim_category')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "sql_dw_distribuidora",
+					"type": "LinkedServiceReference"
+				},
+				"folder": {
+					"name": "GOLD"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [
+					{
+						"name": "category",
+						"type": "varchar"
+					},
+					{
+						"name": "sub_category",
+						"type": "varchar"
+					},
+					{
+						"name": "maintenance",
+						"type": "varchar"
+					}
+				],
+				"typeProperties": {
+					"schema": "GOLD",
+					"table": "DIM_category"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/sql_dw_distribuidora')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/Gold_dim_cliente')]",
 			"type": "Microsoft.DataFactory/factories/datasets",
 			"apiVersion": "2018-06-01",
@@ -900,62 +937,6 @@
 			},
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/linkedServices/sql_dw_distribuidora')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/clientes_csv')]",
-			"type": "Microsoft.DataFactory/factories/datasets",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"linkedServiceName": {
-					"referenceName": "sa_distribuidora_raw",
-					"type": "LinkedServiceReference"
-				},
-				"folder": {
-					"name": "BRONZE"
-				},
-				"annotations": [],
-				"type": "DelimitedText",
-				"typeProperties": {
-					"location": {
-						"type": "AzureBlobStorageLocation",
-						"fileName": "Clientes.csv",
-						"container": "raw"
-					},
-					"columnDelimiter": ",",
-					"escapeChar": "\\",
-					"firstRowAsHeader": true,
-					"quoteChar": "\""
-				},
-				"schema": [
-					{
-						"name": "cst_id",
-						"type": "String"
-					},
-					{
-						"name": "cst_key",
-						"type": "String"
-					},
-					{
-						"name": "cst_firstname",
-						"type": "String"
-					},
-					{
-						"name": "cst_lastname",
-						"type": "String"
-					},
-					{
-						"name": "cst_marital_status",
-						"type": "String"
-					},
-					{
-						"name": "cst_gndr",
-						"type": "String"
-					}
-				]
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/linkedServices/sa_distribuidora_raw')]"
 			]
 		}
 	]
