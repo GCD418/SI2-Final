@@ -34,12 +34,12 @@
 				"          product_key as string,",
 				"          cost as integer,",
 				"          product_name as string,",
-				"          category as string",
+				"          sub_category as string",
 				"     ),",
 				"     allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     isolationLevel: 'READ_UNCOMMITTED',",
-				"     query: 'SELECT product_key,\\ncost, \\nproduct_name,\\ncategory\\nFROM SILVER.Products',",
+				"     query: 'SELECT product_key,\\ncost, \\nproduct_name,\\nsub_category\\nFROM SILVER.Products',",
 				"     format: 'query') ~> source1",
 				"source1 sort(asc(product_key, true)) ~> sort1",
 				"sort1 sink(allowSchemaDrift: true,",
@@ -63,7 +63,7 @@
 				"     mapColumn(",
 				"          product_key,",
 				"          cost,",
-				"          category,",
+				"          sub_category,",
 				"          product_name",
 				"     )) ~> sink1"
 			]
